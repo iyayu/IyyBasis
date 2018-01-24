@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.iyayu.basis.mapper.SystemUserInfoMapper">
+    <resultMap id="BaseResultMap" type="cc.iyayu.basis.model.SystemUserInfoDO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="systemUserAccountId" jdbcType="VARCHAR" property="systemUserAccountId"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="regTime" jdbcType="TIMESTAMP" property="regtime"/>
+        <result column="resTime" jdbcType="TIMESTAMP" property="restime"/>
+        <result column="age" jdbcType="INTEGER" property="age"/>
+    </resultMap>
+
+</mapper>

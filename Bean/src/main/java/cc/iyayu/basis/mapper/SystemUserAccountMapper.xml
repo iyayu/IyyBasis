@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.iyayu.basis.mapper.SystemUserAccountMapper">
+    <resultMap id="BaseResultMap" type="cc.iyayu.basis.model.SystemUserAccountDO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="systemUserAccountCode" jdbcType="VARCHAR" property="systemUserAccountCode" />
+        <result column="systemUserAccountName" jdbcType="VARCHAR" property="systemUserAccountName" />
+        <result column="passWord" jdbcType="VARCHAR" property="passWord" />
+        <result column="salt" jdbcType="VARCHAR" property="salt" />
+        <result column="available" jdbcType="VARCHAR" property="available" />
+    </resultMap>
+
+    <sql id="queryField">
+        sua.id, sua.systemUserAccountCode, sua.systemUserAccountName, sua.`passWord`, sua.`salt`, sua.`available`
+    </sql>
+
+    <select id="login" parameterType="string" resultMap="BaseResultMap">
+        SELECT
+        <include refid="queryField"/>
+        FROM system_user_account AS sua
+        INNER JOIN system_user_account_role AS suar ON suar.systemUserAccountId = sua.id
+        INNER JOIN system_user_role AS sur ON sur.id = suar.systemUserRoleId
+        WHERE sua.systemUserAccountCode = #{accountCode} AND sua.`passWord` = #{pwd}
+        AND sua.available = 1 AND sur.available = 1
+    </select>
+
+    <select id="listPermissionBySystemUserAccountId" resultType="java.lang.String">
+        SELECT
+        sup.perCode
+        FROM system_user_account_role AS suar
+        INNER JOIN system_user_role AS sur ON suar.systemUserRoleId = sur.id
+        INNER JOIN system_user_role_permission AS surp ON surp.systemUserRoleId = sur.id
+        INNER JOIN system_user_permission AS sup ON surp.systemUserPermissionId = sup.id
+        WHERE sur.available = 1 AND sup.available = 1
+        AND sup.available = 1 AND suar.systemUserAccountId = #{systemUserAccountId}
+    </select>
+
+    <sql id="queryWhere">
+        <trim>
+            <if test="systemUserRoleIdOrName != null"> AND sur.id = #{systemUserRoleIdOrName}</if>
+            <if test="id != null"> AND sua.id = #{id}</if>
+            <if test="phone != null "> AND sui.phone = #{phone}</if>
+        </trim>
+    </sql>
+    <select id="listSystemUserAccount" resultType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        <bind name="_systemUserAccountCode" value="'%' + systemUserAccountCode + '%'"/>
+        <bind name="_systemUserAccountName" value="'%' + systemUserAccountName + '%'"/>
+        SELECT
+        sua.id, sua.systemUserAccountCode, sua.systemUserAccountName, sua.available,
+        sur.`name` AS 'systemUserRoleIdOrName',
+        sui.phone, sui.age, sui.regTime
+        FROM system_user_account AS sua
+        LEFT JOIN system_user_info AS sui ON sui.systemUserAccountId = sua.id
+        LEFT JOIN system_user_account_role AS suar ON suar.systemUserAccountId = sua.id
+        LEFT JOIN system_user_role AS sur ON sur.id = suar.systemUserRoleId
+        WHERE sua.systemUserAccountCode LIKE #{_systemUserAccountCode} AND sua.systemUserAccountName LIKE #{_systemUserAccountName}
+        <include refid="queryWhere"/>
+        LIMIT #{page} , #{limit}
+    </select>
+
+    <select id="getCount" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO" resultType="java.lang.Integer">
+        <bind name="_systemUserAccountCode" value="'%' + systemUserAccountCode + '%'"/>
+        <bind name="_systemUserAccountName" value="'%' + systemUserAccountName + '%'"/>
+        SELECT COUNT(*)
+        FROM system_user_account AS sua
+        INNER JOIN system_user_info AS sui ON sui.systemUserAccountId = sua.id
+        INNER JOIN system_user_account_role AS suar ON suar.systemUserAccountId = sua.id
+        INNER JOIN system_user_role AS sur ON sur.id = suar.systemUserRoleId
+        WHERE sua.systemUserAccountCode LIKE #{_systemUserAccountCode} AND sua.systemUserAccountName LIKE #{_systemUserAccountName}
+        <include refid="queryWhere"/>
+        LIMIT #{page} , #{limit}
+    </select>
+
+    <update id="disabledOrEnabled" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        UPDATE `system_user_account`
+        SET `available` = #{available}
+        WHERE (`id` = #{id});
+    </update>
+
+    <update id="updateUserAccountById" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        UPDATE `system_user_account`
+        SET  `systemUserAccountCode` = #{systemUserAccountCode}, `systemUserAccountName` = #{systemUserAccountName}
+        WHERE (`id`=#{id});
+
+        UPDATE `system_user_info`
+        SET
+        `phone`=#{phone},
+        `age`=#{age}
+        WHERE (`systemUserAccountId` = #{id});
+    </update>
+
+    <update id="updateUserAccountRole" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        DELETE FROM `system_user_account_role` WHERE `systemUserAccountId` = #{id};
+        INSERT INTO `system_user_account_role` (`id`, `systemUserAccountId`, `systemUserRoleId`)
+        VALUES (REPLACE(UUID(), '-', ''), #{id}, #{systemUserRoleIdOrName});
+    </update>
+
+    <insert id="insertSystemUserAccount" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+            SELECT REPLACE(UUID(), '-', '') AS id;
+        </selectKey>
+
+        INSERT INTO `system_user_account` (`id`, `systemUserAccountCode`, `systemUserAccountName`, `passWord`, `salt`, `available`)
+        VALUES (#{id}, #{systemUserAccountCode}, #{systemUserAccountName}, #{passWord}, #{salt}, '1');
+
+        INSERT INTO
+        `system_user_info` (`id`, `systemUserAccountId`, `phone`,  `regTime`, `resTime`,`age`)
+        VALUES (REPLACE(UUID(), '-', ''), #{id}, #{phone}, now(), NULL, #{age});
+    </insert>
+
+    <select id="getSystemUserAccountByIdOrAccountCode" resultType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        SELECT
+        <include refid="queryField"/>
+        FROM `system_user_account` AS sua
+        <if test="systemUserAccountId != null">
+            WHERE id = #{systemUserAccountId}
+        </if>
+        <if test="systemUserAccountCode != null">
+            WHERE systemUserAccountCode = #{systemUserAccountCode}
+        </if>
+    </select>
+
+
+
+    <update id="updatePassWord" parameterType="cc.iyayu.basis.vo.SystemUserAccountVO">
+        UPDATE `system_user_account`
+        SET
+        `passWord`=#{passWord},
+        `salt`=#{salt}
+        WHERE (`id`=#{id});
+    </update>
+
+</mapper>

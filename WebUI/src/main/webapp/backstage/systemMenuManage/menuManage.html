@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>菜单管理 | 爱雅玉基础平台</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/bower_components/Ionicons/css/ionicons.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/bower_components/AdminLTE/AdminLTE.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="/static/bower_components/AdminLTE/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="/static/plugins/nprogress/nprogress.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="/static/plugins/message/message.css">
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+    <link rel="stylesheet" href="/static/css/Unified.css">
+    <link rel="stylesheet" href="/static/plugins/buttons/buttons.css">
+    <link rel="stylesheet" href="/static/plugins/jqueryConfirm/css/jquery-confirm.css">
+    <style>
+        .operationCss {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+
+    <header class="main-header">
+        <!-- Logo -->
+        <a href="/backstage/index.html" class="logo">
+            <!-- mini logo for sidebar mini 50x50 pixels -->
+            <span class="logo-mini"><b>IYAYU</b></span>
+            <!-- logo for regular state and mobile devices -->
+            <span class="logo-lg">IYAYU<b> Admin</b></span>
+        </a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top">
+            <!-- Sidebar toggle button-->
+            <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img src="/static/img/user2-160x160.jpg" class="user-image" alt="User Image">
+                            <span class="hidden-xs" id="userInfo_name"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="user-header">
+                                <img src="/static/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                                <p id="userInfo_role"></p>
+                            </li>
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="/backstage/systemUserManage/upPwd.html" class="btn btn-default btn-flat">修改密码</a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="javascript:void(0);" onclick="out()"
+                                       class="btn btn-default btn-flat">退出</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+        </nav>
+    </header>
+
+    <!-- =============================================== -->
+
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <div class="user-panel">
+                <div class="pull-left image">
+                    <img src="/static/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                </div>
+                <div class="pull-left info">
+                    <p id="userInfo_name1"></p>
+                    <a href="#"><i class="fa fa-circle text-success"></i>在线</a>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu" data-widget="tree" id="dMenu"></ul>
+        </section>
+    </aside>
+
+    <!-- =============================================== -->
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>
+                系统菜单管理
+                <small>您可以通过此页面来管理菜单信息, 设置菜单访问权限</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="/backstage/index.html"><i class="fa fa-dashboard"></i> 首页</a></li>
+                <li class="active">系统管理</li>
+                <li class="active">菜单管理</li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header" style="padding-bottom: 0px;">
+                            <div class="row">
+                                <div class="col-xs-2" style="padding-right: 0px;">
+                                    <input type="text" class="form-control" id="roleName" placeholder="请输入菜单名">
+                                </div>
+                                <div class="col-xs-1" style="padding: 0px;">
+                                    <span class="button button-primary button-small" onclick="searchRole()">搜索</span>
+                                </div>
+                                <div class="col-xs-2">
+                                    <span class="button button-action button-small"
+                                          onclick="addOrEdit('add', '0')">添加</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body" style="padding-top: 0px;">
+                            <table id="example2" class="table table-bordered table-hover">
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer" id="footer"></footer>
+
+    <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<script src="/static/js/jquery-3.2.1.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- DataTables -->
+<script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/bower_components/AdminLTE/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/bower_components/AdminLTE/js/demo.js"></script>
+<script src="/static/plugins/nprogress/nprogress.js"></script>
+<script src="/static/plugins/message/message.js"></script>
+<script src="/static/js/Unified.js"></script>
+<script src="/static/js/getMenu.js"></script>
+<script src="/static/plugins/jqueryConfirm/js/jquery.sticky.min.js"></script>
+<script src="/static/plugins/jqueryConfirm/js/jquery-confirm.js"></script>
+<script src="/static/plugins/layer/layer.js"></script>
+<script src="/static/js/iyayuJS.js"></script>
+
+<script>
+
+    function addOrEdit(action, id) {
+        var title = "";
+        if (action == "add") {
+            title = "添加";
+        } else {
+            title = "编辑";
+        }
+
+        var index = layer.open({
+            type: 2,
+            title: title + '系统用户菜单',
+            move: false,
+            resize: false,
+            scrollbar: false,
+            shade: 0.8,
+            area: ['500px', '520px'],
+            btn: ['确定', '取消'],
+            content: '/backstage/systemMenuManage/menuManageById.html?action=' + action + "&id=" + id,
+            yes: function (index, layero) {
+                var systemUserMenuName = getIframeTextById(layero, 0, "systemUserMenuName");
+                var systemUserMenuURL = getIframeTextById(layero, 0, "systemUserMenuURL");
+                var systemUserMenuDescribe = getIframeTextById(layero, 0, "systemUserMenuDescribe");
+                var selectMenu = getIframeSelectValueById(layero, 0, "selectMenu");
+
+                if (systemUserMenuName == "") {
+                    layer.alert('没有设置系统用户菜单名');
+                    return;
+                }
+
+                var url = "";
+                if (action == "add") {
+                    url = "/backstage/systemUserMenu/insertSystemUserMenu.do";
+                } else {
+                    url = "/backstage/systemUserMenu/updateSystemUserMenuById.do";
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: JSON.stringify({
+                        name: systemUserMenuName,
+                        describe: systemUserMenuDescribe,
+                        id: id,
+                        parentId: selectMenu,
+                        url: systemUserMenuURL
+                    }),
+                    dataType: 'JSON',
+                    contentType: 'application/json',
+                    timeout: 15000,
+                    success: function (result) {
+                        if (result["code"] == "200") {
+                            if (result["data"] == "1") {
+                                layer.close(index);
+                                dataTable();
+                                layer.msg('提交成功');
+                                return;
+                            }
+                        }
+                        layer.alert('提交失败');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        layer.alert('提交超时');
+                    }
+                });
+
+            }
+        });
+    }
+
+    function dataTable() {
+        $('#example2').DataTable({
+            "destroy": true,
+            'paging': true,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': false,
+            'info': true,
+            'autoWidth': false,
+            "serverSide": true,
+            "iDisplayLength": 15,
+            'oLanguage': {
+                "sInfo": "共 _TOTAL_ 条数据",
+                "sZeroRecords": "没有检索到数据",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "上一页",
+                    "sNext": "下一页",
+                    "sLast": "尾页"
+                }
+            },
+            ajax: function (data, callback, settings) {
+                //封装请求参数
+                var param = {};
+                param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+                param.start = data.start;//开始的记录序号
+                param.page = (data.start / data.length) + 1;//当前页码
+                param.name = $("#roleName").val();
+                //console.log(param);
+                //ajax请求数据
+                $.ajax({
+                    url: "/backstage/systemUserMenu/listMenuAll.do",
+                    cache: false,
+                    data: param,
+                    dataType: "json",
+                    success: function (result) {
+                        if (result["code"] == "403") {
+                            window.location.href = '/static/err/403.html';
+                            return;
+                        }
+
+                        //封装返回数据
+                        var returnData = {};
+                        returnData.recordsTotal = result.count;
+                        returnData.recordsFiltered = result.count;
+                        var data = result.data;
+                        data.splice(0, 1);
+                        $.each(data, function (index, value) {
+                            var operation = "<span class='button button-highlight button-large' style='width: 40px; height: 20px; line-height: 20px; font-size: 8px; padding: 0px; margin-right: 7px;'  onclick=\"addOrEdit('edit', '" + value.id + "')\">编辑</span>";
+
+                            if (value.available == "1") {
+                                value.available = "<div style='border: 1px solid #00a65a; width: 40px; text-align: center; height: 20px; line-height: 20px; font-size: 8px; color: #00a65a'>启用</div>";
+                                operation += "<span class='button button-royal button-giant' onclick=\"disableOrEnable('" + value.id + "', '0', '" + value.name + "')\" style='width: 40px; height: 20px; line-height: 20px; font-size: 8px; padding: 0px; margin-right: 7px;'>禁用</span>";
+                            } else {
+                                value.available = "<div style='border: 1px solid #f56954; width: 40px; text-align: center; height: 20px; line-height: 20px; font-size: 8px; color: #f56954'>禁用</div>";
+                                operation += "<span class='button button-royal button-giant' onclick=\"disableOrEnable('" + value.id + "', '1', '" + value.name + "')\" style='width: 40px; height: 20px; line-height: 20px; font-size: 8px; padding: 0px; margin-right: 7px;'>启用</span>";
+                            }
+
+                            operation += "<span class='button button-caution button-jumbo' onclick=\"del('" + value.id + "')\" style='width: 40px; height: 20px; line-height: 20px; font-size: 8px; padding: 0px;'>删除</span>";
+
+                            value.operation = operation;
+
+                            if (value.parentName == "根"){
+                                value.systemUserPermissions = "<button class=\"button button-square button-tiny\" onclick=\"permission('" + value.id + "', '" + value.name + "')\"><i class=\"fa fa-plus\"></i></button>";
+                            } else {
+                                value.systemUserPermissions = "";
+                            }
+
+                            if (value.describe == "") {
+                                value.describe = null;
+                            }
+                        });
+                        returnData.data = result.data;
+                        callback(returnData);
+
+                        $("tr:odd").css("background-color", "#F5F5F5");
+                    }
+                });
+            },
+            "aoColumns": [
+                {
+                    "mDataProp": "name",
+                    "sTitle": "菜单名",
+                    "sWidth": "15%",
+                    "sDefaultContent": "无值"
+                },
+                {
+                    "mDataProp": "parentName",
+                    "sTitle": "上级菜单",
+                    "sWidth": "15%",
+                    "sDefaultContent": "无值"
+                },
+                {
+                    "mDataProp": "describe",
+                    "sTitle": "菜单说明",
+                    "sWidth": "590px",
+                    "sDefaultContent": "无说明"
+                },
+                {
+                    "sClass": "operationCss",
+                    "mDataProp": "systemUserPermissions",
+                    "sTitle": "权限",
+                    "sWidth": "100px",
+                    "sDefaultContent": "无值"
+                },
+                {
+                    "sClass": "operationCss",
+                    "mDataProp": "available",
+                    "sTitle": "状态",
+                    "sWidth": "40px",
+                    "sDefaultContent": "无值"
+                },
+                {
+                    "sClass": "operationCss",
+                    "mDataProp": "operation",
+                    "sTitle": "操作",
+                    "sWidth": "15%",
+                    "sDefaultContent": "无值"
+                }]
+        });
+    }
+
+    function permission(ids, names) {
+        var index = layer.open({
+            type: 2,
+            title: '添加或修改菜单访问权限',
+            move: false,
+            resize: false,
+            scrollbar: false,
+            shade: 0.8,
+            area: ['600px', '400px'],
+            btn: ['确定', '取消'],
+            content: '/backstage/systemMenuManage/Permission.html?id=' + ids,
+            yes: function (index, layero) {
+                var obj = $($(layero).find("iframe")[0].contentWindow.document).find("[name='permissions']");
+                var s = '';
+                for (var i = 0; i < obj.length; i++) {
+                    if (obj[i].checked) s += obj[i].value;
+                }
+
+                console.log(s);
+
+                if (s.length <= 1) {
+                    layer.alert('您还没有选择权限');
+                    return;
+                }
+
+
+                $.ajax({
+                    url: '/backstage/systemUserMenu/updateSystemUserMenuById.do',
+                    type: 'POST',
+                    data: JSON.stringify({systemUserPermissionId: s, id: ids, name: names}),
+                    dataType: 'JSON',
+                    contentType: 'application/json',
+                    timeout: 15000,
+                    success: function (result) {
+                        if (result["code"] == "200") {
+                            if (result["data"] == "1") {
+                                layer.close(index);
+                                dataTable();
+                                layer.msg('提交成功');
+                                return;
+                            }
+                        }
+                        layer.alert('提交失败');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        layer.alert('提交超时');
+                    }
+                });
+
+            }
+        });
+    }
+
+    function searchRole() {
+        dataTable();
+    }
+
+    $(function () {
+        dataTable();
+    });
+
+    function disableOrEnable(id, action, name) {
+        if (action == 0) {
+            $.confirm({
+                title: '系统角色禁用',
+                content: '您确定要这样做吗？</br>拥有此角色的用户都无法登录',
+                confirmButton: '确定',
+                cancelButton: '取消',
+                confirm: function () {
+                    updateSystemUserRoleById(id, action, name);
+                }
+            });
+        } else {
+            updateSystemUserRoleById(id, action, name);
+        }
+
+    }
+
+    function updateSystemUserRoleById(id, action, name) {
+        $.ajax({
+            url: '/backstage/systemUserMenu/updateSystemUserMenuById.do',
+            method: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify({"id": id, "name": name, "available": action}),
+            //data: {"id": id, "name": name, "available": action},
+            dataType: "JSON",
+            success: function (result) {
+                console.log(result);
+                if (result["code"] == "200") {
+                    if (result["data"] == "0") {
+                        $.message({message: '更新失败', type: 'error'});
+                    } else {
+                        $.message({message: '更新成功', type: 'success'});
+                        window.location.reload();
+                    }
+                } else {
+                    $.message({message: '更新失败', type: 'error'});
+                }
+            }
+        });
+    }
+
+    function del(id) {
+        $.confirm({
+            title: '删除系统用户菜单',
+            content: '您确定要删除吗？',
+            confirmButton: '确定',
+            cancelButton: '取消',
+            confirm: function () {
+                $.ajax({
+                    url: '/backstage/systemUserMenu/deleteMenuById.do',
+                    method: 'POST',
+                    data: {menuId: id},
+                    dataType: "JSON",
+                    success: function (result) {
+                        console.log(result);
+                        if (result["code"] == "200") {
+                            if (result["data"] == "1") {
+                                $.message({message: '删除成功', type: 'success'});
+                                window.location.reload();
+                                return;
+                            }
+                        }
+                        $.message({message: '删除失败', type: 'error'});
+                    }
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html>

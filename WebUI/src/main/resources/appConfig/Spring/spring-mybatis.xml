@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--
+        数据库连接池
+        事务
+        Mapper接口等配置
+    -->
+
+    <!-- 引入数据库配置文件 -->
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:appConfig/properties/mysql.properties"/>
+    </bean>
+
+    <!-- 数据库连接池 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${mysql.driver}"/>
+        <property name="url" value="${mysql.url}"/>
+        <property name="username" value="${mysql.username}"/>
+        <property name="password" value="${mysql.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${mysql.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${mysql.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${mysql.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${mysql.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${mysql.maxWait}"></property>
+    </bean>
+
+    <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
+        <!-- 它表示我们的Mapper文件存放的位置, 当我们的Mapper文件跟对应的Mapper接口处于同一位置的时候可以不用指定该属性的值 -->
+        <!--<property name="mapperLocations" value="classpath:/sqlMapperXml/*.xml"></property>-->
+
+        <!-- 它一般对应我们的实体类所在的包, 这个时候会自动取对应包中不包括包名的简单类名作为, 包括包名的别名.
+             多个package之间可以用逗号或者分号等来进行分隔.(value的值一定要是包的全名) -->
+        <!--<property name="typeAliasesPackage" value="com.iyayu.model"/>-->
+
+        <!-- 用于指定Mybatis的配置文件位置.
+             如果指定了该属性, 那么会以该配置文件的内容作为配置信息构建对应的SqlSessionFactoryBuilder, 但是后续属性指定的内容会覆盖该配置文件里面指定的对应内容.
+         -->
+        <property name="configLocation" value="classpath:appConfig/MyBatis/mybatis.xml"/>
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+    <!-- 改 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 为映射器接口文件设置基本的包路径. 你可以使用分号或逗号作为分隔符设置多于一个的包路径. 每个映射器将会在指定的包路径中递归地被搜索到 -->
+        <property name="basePackage"
+                  value="cc.iyayu.basis.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:advice id="txAdvice"
+               transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="del*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <!-- 改 -->
+        <aop:pointcut id="bizMethods"
+                      expression="execution(* cc.iyayu.basis.service.*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="bizMethods"/>
+    </aop:config>
+
+
+</beans>

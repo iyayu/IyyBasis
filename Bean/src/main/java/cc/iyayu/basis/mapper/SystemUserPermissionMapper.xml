@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.iyayu.basis.mapper.SystemUserPermissionMapper">
+    <resultMap id="BaseResultMap" type="cc.iyayu.basis.model.SystemUserPermissionDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="percode" jdbcType="VARCHAR" property="perCode"/>
+        <result column="describe" jdbcType="VARCHAR" property="describe"/>
+        <result column="available" jdbcType="VARCHAR" property="available"/>
+    </resultMap>
+
+    <select id="listSystemUserPermission" resultType="cc.iyayu.basis.vo.SystemUserPermissionVO"
+            parameterType="cc.iyayu.basis.vo.SystemUserPermissionVO">
+        <bind name="_name" value="'%' + name + '%'"/>
+        SELECT
+        `id`, `name`
+        FROM system_user_permission AS sup
+        WHERE sup.name LIKE #{_name}
+        <if test="queryType != null ">
+            <bind name="_queryType" value="'%' + queryType + '%'"/>
+            AND perCode LIKE #{_queryType}
+        </if>
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        <bind name="_name" value="'%' + name + '%'"/>
+        SELECT
+        COUNT(*)
+        FROM system_user_permission AS sup
+        WHERE sup.name LIKE #{_name}
+    </select>
+
+    <select id="getCountByParameter" resultType="java.lang.Integer" parameterType="cc.iyayu.basis.vo.SystemUserRoleVO">
+        SELECT
+        COUNT(*)
+        FROM system_user_permission WHERE id IN
+        <foreach collection="systemUserPermissions" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </select>
+
+
+
+</mapper>

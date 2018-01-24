@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--
+        这里的bean都是放入Spring IoC容器的
+    -->
+    <bean class="cc.iyayu.basis.service.defaults.SystemUserAccountServiceImpl" id="systemUserAccountService"/>
+
+    <bean class="cc.iyayu.basis.service.defaults.SystemUserRoleServiceImpl" id="systemUserRoleService"/>
+
+    <bean class="cc.iyayu.basis.service.defaults.SystemUserPermissionServiceImpl" id="systemUserPermissionService"/>
+
+    <bean class="cc.iyayu.basis.service.defaults.SystemUserMenuServiceImpl" id="systemUserMenuService"/>
+</beans>

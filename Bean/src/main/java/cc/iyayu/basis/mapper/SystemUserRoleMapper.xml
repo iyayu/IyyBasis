@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.iyayu.basis.mapper.SystemUserRoleMapper">
+
+    <resultMap id="BaseResultMap" type="cc.iyayu.basis.vo.SystemUserRoleVO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="describe" jdbcType="VARCHAR" property="describe"/>
+        <result column="available" jdbcType="VARCHAR" property="available"/>
+    </resultMap>
+
+    <resultMap id="OneToMany" type="cc.iyayu.basis.vo.SystemUserRoleVO">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="describe" jdbcType="VARCHAR" property="describe"/>
+        <result column="available" jdbcType="VARCHAR" property="available"/>
+
+        <collection property="systemUserPermissions" column="id"
+                    ofType="cc.iyayu.basis.vo.SystemUserPermissionVO"
+                    select="listChildPermissionUnderTheRoleBySystemRoleId"/>
+    </resultMap>
+
+    <!-- 查询字段 -->
+    <sql id="queryField">
+        `id`, `name`, `describe`, `available`
+    </sql>
+
+    <select id="listSystemUserRole" parameterType="cc.iyayu.basis.vo.SystemUserRoleVO" resultType="cc.iyayu.basis.vo.SystemUserRoleVO">
+        <bind name="roleName" value="'%' + name + '%'"/>
+        SELECT
+        <include refid="queryField"/>
+        FROM system_user_role WHERE `name` LIKE #{roleName}
+        LIMIT #{page} , #{limit}
+    </select>
+
+    <select id="getCount" parameterType="cc.iyayu.basis.vo.SystemUserRoleVO" resultType="java.lang.Integer">
+        <bind name="roleName" value="'%' + name + '%'"/>
+        SELECT COUNT(*) FROM
+        (
+          SELECT id
+          FROM system_user_role WHERE `name` LIKE #{roleName}
+        ) AS temp;
+    </select>
+
+    <select id="getSystemUserRoleAndPermissionBySystemUserRoleId" resultMap="OneToMany">
+        SELECT
+        sur.*
+        FROM system_user_role AS sur WHERE sur.id = #{systemUserRoleId}
+    </select>
+
+    <select id="listChildPermissionUnderTheRoleBySystemRoleId" resultType="cc.iyayu.basis.vo.SystemUserPermissionVO">
+        SELECT
+        sup.`name`, sup.available, sup.id
+        FROM system_user_role_permission AS surp
+        INNER JOIN system_user_permission AS sup ON sup.id = surp.systemUserPermissionId
+        WHERE surp.systemUserRoleId = #{id}
+    </select>
+
+    <select id="getCountById" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM system_user_role WHERE `id` = #{id}
+    </select>
+
+    <update id="updateSystemUserRoleById" parameterType="cc.iyayu.basis.vo.SystemUserRoleVO">
+        UPDATE
+        `system_user_role`
+        SET `name` = #{name}
+        WHERE (`id` = #{id});
+
+        <if test="available != null">
+            UPDATE
+            `system_user_role`
+            SET `available` = #{available}
+            WHERE (`id`=#{id});
+        </if>
+
+        <if test="describe != null">
+            UPDATE
+            `system_user_role`
+            SET `describe` = #{describe}
+            WHERE (`id` = #{id});
+        </if>
+
+        <if test="systemUserPermissions != null">
+            DELETE FROM system_user_role_permission WHERE systemUserRoleId = #{id};
+
+            INSERT INTO system_user_role_permission (id, systemUserRoleId, systemUserPermissionId) VALUES
+            <foreach item="item" collection="systemUserPermissions" separator=",">
+                (REPLACE(UUID(), '-', ''), #{id}, #{item.id})
+            </foreach>
+        </if>
+    </update>
+
+    <delete id="deleteSystemUserRoleById">
+        DELETE FROM system_user_role WHERE id = #{systemUserRoleId};
+        DELETE FROM system_user_role_permission WHERE systemUserRoleId = #{systemUserRoleId};
+        DELETE FROM system_user_account_role WHERE systemUserRoleId = #{systemUserRoleId};
+    </delete>
+
+    <insert id="insertSystemUserRoleById" parameterType="cc.iyayu.basis.vo.SystemUserRoleVO">
+        INSERT INTO
+        `system_user_role` (`id`, `name`, `describe`, `available`)
+        VALUES (REPLACE(UUID(), '-', ''), #{name}, #{describe}, '1');
+
+        <if test="systemUserPermissions != null">
+            INSERT INTO system_user_role_permission (id, systemUserRoleId, systemUserPermissionId) VALUES
+            <foreach item="item" collection="systemUserPermissions" separator=",">
+                (REPLACE(UUID(), '-', ''), #{id}, #{item.id})
+            </foreach>
+        </if>
+    </insert>
+</mapper>

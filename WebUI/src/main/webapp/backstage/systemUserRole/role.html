@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>角色选择 | 爱雅玉基础平台</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/bower_components/Ionicons/css/ionicons.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/static/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/bower_components/AdminLTE/AdminLTE.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="/static/bower_components/AdminLTE/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="/static/plugins/nprogress/nprogress.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="/static/plugins/message/message.css">
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+    <link rel="stylesheet" href="/static/css/Unified.css">
+    <link rel="stylesheet" href="/static/plugins/buttons/buttons.css">
+    <link rel="stylesheet" href="/static/plugins/jqueryConfirm/css/jquery-confirm.css">
+    <style>
+        .operationCss {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div class="content-wrapper">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-body" style="padding-top: 0px;">
+                            <table id="example2" class="table table-bordered table-hover"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer" id="footer"></footer>
+
+    <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<script src="/static/js/jquery-3.2.1.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- DataTables -->
+<script src="/static/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="/static/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/static/bower_components/fastclick/lib/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/bower_components/AdminLTE/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/static/bower_components/AdminLTE/js/demo.js"></script>
+<script src="/static/plugins/jqueryConfirm/js/jquery.sticky.min.js"></script>
+<script src="/static/plugins/jqueryConfirm/js/jquery-confirm.js"></script>
+<script src="/static/plugins/layer/layer.js"></script>
+<script src="/static/js/iyayuJS.js"></script>
+
+<script>
+    function dataTable() {
+        $('#example2').DataTable({
+            "destroy": true,
+            'paging': false,
+            'lengthChange': false,
+            'searching': false,
+            'ordering': false,
+            'info': false,
+            'autoWidth': false,
+            "serverSide": true,
+            "iDisplayLength": 10000,
+            ajax: function (data, callback, settings) {
+                //封装请求参数
+                var param = {};
+                param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+                param.start = data.start;//开始的记录序号
+                param.page = (data.start / data.length) + 1;//当前页码
+                $.ajax({
+                    url: "/backstage/systemUserRole/listSystemUserRole.do",
+                    cache: false,
+                    data: param,
+                    dataType: "json",
+                    success: function (result) {
+                        if (result["code"] == "403") {
+                            window.location.href = '/static/err/403.html';
+                            return;
+                        }
+
+                        var returnData = {};
+                        returnData.recordsTotal = result.count;
+                        returnData.recordsFiltered = result.count;
+                        $.each(result.data, function (index, value) {
+                            value.checkboxs = "<input type=\"radio\" name=\"role\" roleName='" + value.name + "' value='" + value.id + "'/>";
+                        });
+                        returnData.data = result.data;
+                        callback(returnData);
+
+                        $.ajax({
+                            url: '/backstage/systemUserAccount/listSystemUserAccount.do',
+                            type: 'get',
+                            dataType: 'JSON',
+                            data: {id: ids},
+                            timeout: 15000,
+                            success: function (result) {
+                                if (result["code"] == "200") {
+                                    $("input[roleName=\"" + result["data"][0].systemUserRoleIdOrName + "\"]").attr("checked", 'true');
+                                    return;
+                                }
+                                layer.alert('查询失败');
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                layer.alert('提交超时');
+                            }
+                        });
+
+                        $("tr:odd").css("background-color", "#F5F5F5");
+                    }
+                });
+            },
+            "aoColumns": [
+                {
+                    "sClass": "operationCss",
+                    "mDataProp": "checkboxs",
+                    "sTitle": "",
+                    "sWidth": "5%",
+                    "sDefaultContent": "无值"
+                },
+                {
+                    "mDataProp": "name",
+                    "sTitle": "角色名",
+                    "sWidth": "50%",
+                    "sDefaultContent": "无值"
+                }]
+        });
+    }
+
+    var ids = "";
+    $(function () {
+        ids = getUrlParam("id");
+        dataTable();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <description>Flyway 数据库版本操作配置</description>
+
+    <bean id="flyway" class="org.flywaydb.core.Flyway" init-method="migrate">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="locations" value="appConfig/db"/>
+    </bean>
+
+    <!-- depends-on解决 Flyway 还在更新数据库, 应用程序的其他逻辑已经开始使用数据库进行其他操作了 -->
+    <!--<bean id="sessionFactory" class="" depends-on="flyway">
+
+    </bean>-->
+</beans>

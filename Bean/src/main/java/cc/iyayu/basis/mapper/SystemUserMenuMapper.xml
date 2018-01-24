@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.iyayu.basis.mapper.SystemUserMenuMapper">
+    <resultMap id="BaseResultMap" type="cc.iyayu.basis.model.SystemUserMenuDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="parentid" jdbcType="VARCHAR" property="parentId"/>
+        <result column="queuenumber" jdbcType="BIGINT" property="queueNumber"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="describe" jdbcType="VARCHAR" property="describe"/>
+        <result column="available" jdbcType="VARCHAR" property="available"/>
+    </resultMap>
+
+    <update id="insertSystemUserMenu" parameterType="cc.iyayu.api.model.Menu">
+        INSERT INTO
+        `system_user_menu` (`id`, `name`, `url`, `parentId`, `queueNumber`, `icon`, `describe`, `available`)
+        VALUES (REPLACE(UUID(), '-', ''), #{name}, #{url}, #{parentId}, '3', 'fa fa-cogs', #{describe}, '1');
+    </update>
+
+    <update id="updateSystemUserMenuById" parameterType="cc.iyayu.api.model.Menu">
+        UPDATE
+        `system_user_menu`
+        SET `name` = #{name}
+        WHERE (`id` = #{id});
+
+        <if test="available != null">
+            UPDATE
+            `system_user_menu`
+            SET `available` = #{available}
+            WHERE (`id`=#{id});
+        </if>
+
+        <if test="describe != null">
+            UPDATE
+            `system_user_menu`
+            SET `describe` = #{describe}
+            WHERE (`id` = #{id});
+        </if>
+
+        <if test="url != null">
+            UPDATE
+            `system_user_menu`
+            SET `url` = #{url}
+            WHERE (`id` = #{id});
+        </if>
+
+        <if test="parentId != null">
+            UPDATE
+            `system_user_menu`
+            SET `parentId` = #{parentId}
+            WHERE (`id` = #{id});
+        </if>
+
+        <if test="systemUserPermissionId != null">
+            DELETE FROM system_user_permission_menu WHERE systemUserMenuId = #{id};
+            INSERT INTO `system_user_permission_menu` (`id`, `systemUserPermissionId`, `systemUserMenuId`)
+            VALUES (REPLACE(UUID(), '-', ''), #{systemUserPermissionId}, #{id});
+        </if>
+    </update>
+
+    <delete id="deleteMenuById" parameterType="string">
+        DELETE FROM system_user_menu WHERE id = #{id};
+        DELETE FROM system_user_permission_menu WHERE systemUserMenuId = #{id};
+    </delete>
+
+    <select id="listMenuIdBySystemUserAccountId" resultType="java.lang.String">
+        SELECT
+        sum.id
+        FROM system_user_account AS sua
+        INNER JOIN system_user_account_role AS suar ON suar.systemUserAccountId = sua.id
+        INNER JOIN system_user_role AS sur ON sur.id = suar.systemUserRoleId
+        INNER JOIN system_user_role_permission AS surp ON surp.systemUserRoleId = sur.id
+        INNER JOIN system_user_permission AS sup ON surp.systemUserPermissionId = sup.id
+        INNER JOIN system_user_permission_menu AS supm ON supm.systemUserPermissionId = sup.id
+        INNER JOIN system_user_menu AS sum ON sum.id = supm.systemUserMenuId
+        WHERE sua.id = #{systemUserAccountId}
+    </select>
+
+    <select id="listMenuBySystemUserMenuId" resultType="cc.iyayu.api.model.Menu">
+        SELECT
+        `id`, `name`, `url`, `parentId`, `queueNumber`, `icon`, `describe`, `available`
+        FROM system_user_menu
+        WHERE
+        `id` IN
+            <foreach item="item" index="index" collection="systemUserMenuIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        OR
+        `parentId` IN
+            <foreach item="item" index="index" collection="systemUserMenuIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        AND available = '1'
+        ORDER BY `id`, `queueNumber`
+    </select>
+
+    <select id="listMenuAll" resultType="cc.iyayu.api.model.Menu" parameterType="cc.iyayu.api.model.Menu">
+        <bind name="_name" value="'%' + name + '%'"/>
+        SELECT sum1.*, sum2.`name` AS parentName
+        FROM system_user_menu AS sum1
+        INNER JOIN system_user_menu AS sum2 ON sum2.id = sum1.parentId
+        WHERE sum1.`name` LIKE #{_name}
+        LIMIT #{page} , #{limit}
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        <bind name="_name" value="'%' + name + '%'"/>
+        SELECT COUNT(*) FROM
+        (
+          SELECT sum1.*, sum2.`name` AS parentName
+          FROM system_user_menu AS sum1
+          INNER JOIN system_user_menu AS sum2 ON sum2.id = sum1.parentId
+          WHERE sum1.`id` != '1' AND sum1.`name` LIKE #{_name}
+        ) AS temp;
+    </select>
+
+    <select id="getCountByParentId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM system_user_menu WHERE parentId = #{id};
+    </select>
+
+
+    <select id="getCountById" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM system_user_menu WHERE id = #{id};
+    </select>
+
+    <select id="getMenuById" resultType="cc.iyayu.api.model.Menu">
+        SELECT sum1.*, supm.systemUserPermissionId
+        FROM system_user_menu AS sum1
+        LEFt JOIN system_user_permission_menu AS supm ON sum1.id = supm.systemUserMenuId
+        WHERE sum1.`id` LIKE #{id}
+    </select>
+
+</mapper>
